@@ -1,71 +1,100 @@
 from math import ceil
 
-'''
-• RotR(A, n) denotes the circular right shift of n bits of the binary word A.
-• ShR(A, n) denotes the right shift of n bits of the binary word A.
-• AkB denotes the concatenation of the binary words A and B.
+tester1= 32*"1"
+tester2= (16*"1")+(16*"0")
 
-The algorithm uses the functions:
-Ch(X, Y, Z) = (X ∧ Y ) ⊕ (X ∧ Z),
-M aj(X, Y, Z) = (X ∧ Y ) ⊕ (X ∧ Z) ⊕ (Y ∧ Z),
-Σ 0 (X) = RotR(X, 2) ⊕ RotR(X, 13) ⊕ RotR(X, 22),
-Σ 1 (X) = RotR(X, 6) ⊕ RotR(X, 11) ⊕ RotR(X, 25),
-σ 0 (X) = RotR(X, 7) ⊕ RotR(X, 18) ⊕ ShR(X, 3),
-σ 1 (X) = RotR(X, 17) ⊕ RotR(X, 19) ⊕ ShR(X, 10),
-and the 64 binary words K i given by the 32 first bits of the fractional parts of the cube roots of the first
-64 prime numbers:'''
+def add_mod(*args):
+    result = int()
+    for arg in args:
+        result += int(arg, 2)
+    result = result % (2**32)
+    return format(result, "032b")
 
+# print(add_mod(32*"1", 32*"1"))
 
-def circular_right_shift(n, a):
+def RotR(A, n):
+    first_part = A[-n:]
+    last_part = A[:-n]
+    return first_part + last_part
 
-    pass
+# print(tester2)
+# print(RotR(tester2,2))
 
+def ShR(A, n):
+    A = int(A, 2)
+    result = A >> n
+    return format(result, "032b")
 
-def right_shift(n, a):
-    pass
+# print(ShR(tester2,2))
 
-
-def bin_concat(a,b):
-    pass
-
-
-def ch(x, y, z):
-    return (x & y) ^ (x & z)
-
-
-def maj(x, y, z):
-    return (x & y) ^ (x & z) ^ (y & z)
+def AkB(*args):
+    result = ""
+    for arg in args:
+        result += arg
+    return result
 
 
-def sigma0(x):
+def ch(X, Y, Z):
+    X = int(X, 2)
+    Y = int(Y, 2)
+    Z = int(Z, 2)
+    result = (X & Y) ^ ((~X) & Z)
+    return format(result, "032b")
 
-    pass
+# print(ch("0010","0011","0100"))
+
+def maj(X, Y, Z):
+    X = int(X, 2)
+    Y = int(Y, 2)
+    Z = int(Z, 2)
+    result = (X & Y) ^ (X & Z) ^ (Y & Z)
+    return format(result, "032b")
 
 
-def sigma1(x):
-    pass
+def sigma0(X):
+    first_part = int(RotR(X, 2), 2)
+    second_part = int(RotR(X, 13), 2)
+    third_part = int(RotR(X, 22), 2)
+    result = first_part ^ second_part ^ third_part
+    return format(result, "032b")
 
 
-def omega0(x):
-    pass
+def sigma1(X):
+    first_part = int(RotR(X, 6), 2)
+    second_part = int(RotR(X, 11), 2)
+    third_part = int(RotR(X, 25), 2)
+    result = first_part ^ second_part ^ third_part
+    return format(result, "032b")
+
+
+def omega0(X):
+    first_part = int(RotR(X, 7), 2)
+    second_part = int(RotR(X, 18), 2)
+    third_part = int(ShR(X, 3), 2)
+    result = first_part ^ second_part ^ third_part
+    return format(result, "032b")
 
 
 def omega1(x):
-    pass
+    first_part = int(RotR(x, 17), 2)
+    second_part = int(RotR(x, 19), 2)
+    third_part = int(ShR(x, 10), 2)
+    result = first_part ^ second_part ^ third_part
+    return format(result, "032b")
 
 
-my_string = "Hello world! PADDING STARTS HERE " \
-            "The message shall always be padded, even if the initial length is already a multiple of 512." \
-            "To ensure that the message 1 has length multiple of 512 bits:" \
-            "STEP 1: first, a bit 1 is appended," \
-            "STEP 2: next, k bits 0 are appended, with k being the smallest positive integer such that l + 1 + k ≡ 448" \
-            "mod 512, where l is the length in bits of the initial message," \
-            "--> I assume here that k is at least 1, since it should be a positive integer. That means that I at least, " \
-            "should be able to store 1 byte for a 1, 1 byte for a 0, and 64 bytes for the size of the original string. " \
-            "That means 66 in total. That means that the last chunk can not be bigger than 512 - 66 = 446, " \
-            "else an additional chunk is added." \
-            "STEP 3 finally, the length l < 2 64 of the initial message is represented with exactly 64 bits, and these " \
-            "bits are added at the end of the message."
+def T1_f(h, e, f, g, k_num, w_block):
+    result = add_mod(h, sigma1(e), ch(e,f,g), k_num, w_block)
+    return result
+
+
+def T2_f(a, b, c):
+    return add_mod(sigma0(a), maj(a, b, c))
+
+
+
+
+my_string = "61 62 63"
 
 
 bin_string = str()
@@ -78,7 +107,7 @@ for letter in my_string:
 
 #Since the algortithm processes the string in chunks of 512 bytes, we might need to split up our string in chunks
 # of that size. We will set these chunks up in a list.
-chunks_list = []
+M_blocks = []
 chunk_size = 512
 
 size_bin_sting = bin_string.__len__()
@@ -87,7 +116,7 @@ chunks = ceil(size_bin_sting/chunk_size)
 for r in range(chunks):
     lower_range = r * chunk_size
     upper_range = (r + 1) * chunk_size
-    chunks_list.append(bin_string[lower_range:upper_range])
+    M_blocks.append(bin_string[lower_range:upper_range])
 
 '''PADDING STARTS HERE
 The message shall always be padded, even if the initial length is already a multiple of 512.
@@ -106,22 +135,23 @@ are added at the end of the message.
 
 '''
 
-if chunks_list[-1].__len__() < 512 and chunks_list[-1].__len__() > 446:
-    chunks_list[-1] = chunks_list[-1] + "1" #STEP 1
-    zeroes_to_add = 512 - chunks_list[-1].__len__()
-    chunks_list[-1] = chunks_list[-1] + "0" * zeroes_to_add
+if M_blocks[-1].__len__() < chunk_size and M_blocks[-1].__len__() > 446:
+    M_blocks[-1] = M_blocks[-1] + "1" #STEP 1
+    zeroes_to_add = 512 - M_blocks[-1].__len__()
+    M_blocks[-1] = M_blocks[-1] + "0" * zeroes_to_add
 
-if chunks_list[-1].__len__() == 512:
-    chunks_list.append("")
+if M_blocks[-1].__len__() == chunk_size:
+    M_blocks.append("")
 
 else:
-    chunks_list[-1] = chunks_list[-1] + "1" #STEP 1
+    M_blocks[-1] = M_blocks[-1] + "1" #STEP 1
 
-zeroes_to_add = 448 - chunks_list[-1].__len__()
-chunks_list[-1] = chunks_list[-1] + "0" * zeroes_to_add #STEP 2
+zeroes_to_add = 448 - M_blocks[-1].__len__()
+M_blocks[-1] = M_blocks[-1] + "0" * zeroes_to_add #STEP 2
 
 bin_size_original_message = format(bin_string.__len__(), '064b')
-chunks_list[-1] = chunks_list[-1] + bin_size_original_message #STEP 3
+M_blocks[-1] = M_blocks[-1] + bin_size_original_message #STEP 3
+chunks = M_blocks.__len__()
 
 # for chunk in chunks_list:
 #     print(chunk.__len__(),chunk)
@@ -134,20 +164,74 @@ M = W 1 kW 2 k · · · kW 15 kW 16
 W i = σ 1 (W i−2 ) + W i−7 + σ 0 (W i−15 ) + W i−16 ,
 17 ≤ i ≤ 64.'''
 
-block = []
 
-for chunks in chunks_list:
-    for i in range(16):
-        block.append(chunks_list[i*32:(i+1)*32])
-    for i in range(17,65):
-        part1 = int(block[i-2], 2)
-        part2 = int(block[i-7], 2)
-        part3 = int(block[i-15], 2)
-        part4 = int(block[i-16], 2)
+for index, chunks in enumerate(M_blocks):
+    W_blocks = []
+    for t in range(16):
+        W_blocks.append(chunks[t * 32:(t + 1) * 32])
+    for t in range(17, 65):
+        part1 = omega1(W_blocks[t - 1 - 2])
+        part2 = W_blocks[t - 1 - 7]
+        part3 = omega0(W_blocks[t - 1 - 15])
+        part4 = W_blocks[t - 1 - 16]
+        result = add_mod(part1, part2, part3, part4)
+        W_blocks.append(result)
+    M_blocks[index] = W_blocks
 
-        block.append()
+K_nr = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]
+
+for index, k in enumerate(K_nr):
+    K_nr[index] = format(k, "032b")
+
+H1 = format(0x6a09e667, "032b")
+H2 = format(0xbb67ae85, "032b")
+H3 = format(0x3c6ef372, "032b")
+H4 = format(0xa54ff53a, "032b")
+H5 = format(0x510e527f, "032b")
+H6 = format(0x9b05688c, "032b")
+H7 = format(0x1f83d9ab, "032b")
+H8 = format(0x5be0cd19, "032b")
 
 
+for index_M, M_block in enumerate(M_blocks):
 
+    a = H1
+    b = H2
+    c = H3
+    d = H4
+    e = H5
+    f = H6
+    g = H7
+    h = H8
 
+    for i in range(64):
+        T1 = T1_f(h, e, f, g, K_nr[i], M_block[i])
+        T2 = T2_f(a, b, c)
+        h = g
+        g = f
+        f = e
+        e = add_mod(d, T1)
+        d = c
+        c = b
+        b = a
+        a = add_mod(T1, T2)
 
+    H1 = add_mod(H1, a)
+    H2 = add_mod(H2, b)
+    H3 = add_mod(H3, c)
+    H4 = add_mod(H4, d)
+    H5 = add_mod(H5, e)
+    H6 = add_mod(H6, f)
+    H7 = add_mod(H7, g)
+    H8 = add_mod(H8, h)
+
+H = AkB(H1, H2, H3, H4, H5, H6, H7, H8)
+
+print(hex(int(H, 2)))
