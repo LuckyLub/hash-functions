@@ -1,7 +1,5 @@
 from math import ceil
 
-tester1= 32*"1"
-tester2= (16*"1")+(16*"0")
 
 def add_mod(*args):
     result = int()
@@ -10,22 +8,18 @@ def add_mod(*args):
     result = result % (2**32)
     return format(result, "032b")
 
-# print(add_mod(32*"1", 32*"1"))
 
 def RotR(A, n):
     first_part = A[-n:]
     last_part = A[:-n]
     return first_part + last_part
 
-# print(tester2)
-# print(RotR(tester2,2))
 
 def ShR(A, n):
     A = int(A, 2)
     result = A >> n
     return format(result, "032b")
 
-# print(ShR(tester2,2))
 
 def AkB(*args):
     result = ""
@@ -41,7 +35,6 @@ def ch(X, Y, Z):
     result = (X & Y) ^ ((~X) & Z)
     return format(result, "032b")
 
-# print(ch("0010","0011","0100"))
 
 def maj(X, Y, Z):
     X = int(X, 2)
@@ -94,7 +87,7 @@ def T2_f(a, b, c):
 
 
 
-my_string = "61 62 63"
+my_string = "Hello world!"
 
 
 bin_string = str()
@@ -112,28 +105,14 @@ chunk_size = 512
 
 size_bin_sting = bin_string.__len__()
 chunks = ceil(size_bin_sting/chunk_size)
+if chunks == 0:
+    chunks = 1
 
 for r in range(chunks):
     lower_range = r * chunk_size
     upper_range = (r + 1) * chunk_size
     M_blocks.append(bin_string[lower_range:upper_range])
 
-'''PADDING STARTS HERE
-The message shall always be padded, even if the initial length is already a multiple of 512.
-To ensure that the message 1 has length multiple of 512 bits:
-STEP 1: first, a bit 1 is appended,
-STEP 2: next, k bits 0 are appended, with k being the smallest positive integer such that l + 1 + k ≡ 448
-mod 512, where l is the length in bits of the initial message,
-
---> I assume here that k is at least 1, since it should be a positive integer. That means that I at least, should be
-able to store 1 byte for a 1, 1 byte for a 0, and 64 bytes for the size of the original string. That means 66 in 
-total. That means that the last chunk can not be bigger than 512 - 66 = 446, else an additional chunk is added.
-
-
-STEP 3 finally, the length l < 2 64 of the initial message is represented with exactly 64 bits, and these bits
-are added at the end of the message.
-
-'''
 
 if M_blocks[-1].__len__() < chunk_size and M_blocks[-1].__len__() > 446:
     M_blocks[-1] = M_blocks[-1] + "1" #STEP 1
@@ -153,16 +132,6 @@ bin_size_original_message = format(bin_string.__len__(), '064b')
 M_blocks[-1] = M_blocks[-1] + bin_size_original_message #STEP 3
 chunks = M_blocks.__len__()
 
-# for chunk in chunks_list:
-#     print(chunk.__len__(),chunk)
-
-'''Block decomposition
-For each block M ∈ {0, 1} 512 , 64 words of 32 bits each are constructed as follows:
-• the first 16 are obtained by splitting M in 32-bit blocks
-M = W 1 kW 2 k · · · kW 15 kW 16
-• the remaining 48 are obtained with the formula:
-W i = σ 1 (W i−2 ) + W i−7 + σ 0 (W i−15 ) + W i−16 ,
-17 ≤ i ≤ 64.'''
 
 
 for index, chunks in enumerate(M_blocks):
